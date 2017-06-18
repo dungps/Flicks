@@ -1,5 +1,8 @@
 import React, { Component } from "react";
-import { View, Image, Text } from "react-native";
+import { View, Text } from "react-native";
+
+import Image from "react-native-image-progress";
+import Progress from "react-native-progress";
 
 class Item extends Component {
   setNativeProps(props) {
@@ -15,16 +18,17 @@ class Item extends Component {
         style={{ height: 200, marginBottom: 10, flexDirection: "row" }}
       >
         <Image
+          indicator={Progress}
           style={{ flex: 4 }}
           source={{
             uri: `https://image.tmdb.org/t/p/original${poster_path}`
           }}
         />
         <View style={{ paddingLeft: 10, flex: 6 }}>
-          <Text style={{ fontWeight: "bold", marginBottom: 15 }}>
+          <Text style={{ fontWeight: "bold", marginBottom: 10 }}>
             {original_title}
           </Text>
-          <Text>{overview}</Text>
+          <Text>{overview.substr(0, 400)}...</Text>
         </View>
       </View>
     );

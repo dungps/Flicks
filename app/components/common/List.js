@@ -31,25 +31,74 @@ class List extends Component {
 
     this.state = {
       isLoading: true,
-      dataSource: ds.cloneWithRows(["row 1", "row 2"]),
-      search: ""
+      dataSource: ds.cloneWithRows([]),
+      search: "",
+      currentPage: 1,
+      isFirstPage: true,
+      refreshing: false
     };
   }
 
   componentWillMount() {
-    let endpoint = this.props.endpoint;
-    let url = `https://api.themoviedb.org/3/movie/${endpoint}?api_key=${API_KEY}`;
-    if (this.state.search !== "") {
-      url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${this
-        .state.search}`;
+    this.getLatestData();
+  }
+
+  componentWillReceiveProps(props) {
+    if (props.search !== this.state.search) {
+      this.setState({
+        isLoading: true,
+        isFirstPage: true,
+        currentPage: 1,
+        search: props.search,
+        endpoint: props.endpoint,
+        dataSource: ds.cloneWithRows([])
+      });
+
+      console.log(this.state);
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.search !== this.state.search) {
+      this.setState(
+        {
+          isLoading: true,
+          isFirstPage: true,
+          currentPage: 1,
+          search: nextProps.search,
+          endpoint: nextProps.endpoint,
+          dataSource: ds.cloneWithRows([])
+        },
+        this.getLatestData
+      );
     }
 
-    fetch(url)
+    return true;
+  }
+
+  getLatestData() {
+    if (this.state.isFirstPage) {
+      _postData = [];
+    }
+
+    const currentPage = this.state.currentPage;
+    const endpoint = this.props.endpoint;
+    let url = `https://api.themoviedb.org/3/movie/${endpoint}?api_key=${API_KEY}&page=${currentPage}`;
+    if (this.state.search !== "") {
+      url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURI(
+        this.state.search
+      )}&page=${currentPage}`;
+    }
+
+    return fetch(url)
       .then(resp => resp.json())
       .then(jsonResp => {
+        _postData = _postData.concat(jsonResp.results);
         this.setState({
           isLoading: false,
-          dataSource: this.state.dataSource.cloneWithRows(jsonResp.results)
+          isFirstPage: false,
+          dataSource: this.state.dataSource.cloneWithRows(_postData),
+          currentPage: currentPage + 1
         });
       })
       .catch(err => {
@@ -57,9 +106,44 @@ class List extends Component {
       });
   }
 
+  _onEndReached(rowData) {
+    this.getLatestData();
+  }
+
+  _onRefresh() {
+    this.setState(
+      {
+        isFirstPage: true,
+        currentPage: 1,
+        refreshing: true
+      },
+      () => {
+        this.getLatestData().then(() => {
+          this.setState({
+            refreshing: false
+          });
+        });
+      }
+    );
+  }
+
   renderRow(rowData) {
     return (
-      <TouchableHighlight>
+      <TouchableHighlight
+        postid={rowData.id}
+        onPress={() => {
+          this.props.navigator.push({
+            id: "single",
+            data: rowData
+          });
+        }}
+        onLongPress={() => {
+          this.props.navigator.push({
+            id: "single",
+            data: rowData
+          });
+        }}
+      >
         <Item item={rowData} />
       </TouchableHighlight>
     );
@@ -74,7 +158,20 @@ class List extends Component {
       <ListView
         enableEmptySections={true}
         dataSource={this.state.dataSource}
-        renderRow={this.renderRow}
+        renderRow={this.renderRow.bind(this)}
+        onEndReached={this._onEndReached.bind(this)}
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this._onRefresh.bind(this)}
+          />
+        }
+        style={[
+          {
+            backgroundColor: "#fff"
+          },
+          this.props.style
+        ]}
       />
     );
 

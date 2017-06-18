@@ -2,11 +2,12 @@ import React, { Component } from "react";
 
 import { View, Text, TextInput, TouchableHighlight } from "react-native";
 
+import { SearchBar } from "react-native-elements";
+
 const styles = {
   container: {
     backgroundColor: "transparent",
-    height: 60,
-    paddingTop: 15,
+    height: 50,
     elevation: 2,
     position: "relative"
   }
@@ -32,12 +33,7 @@ class Head extends Component {
   }
 
   homeScreen() {
-    return (
-      <TextInput
-        onChangeText={this.onTextChange.bind(this)}
-        value={this.state.text}
-      />
-    );
+    return <SearchBar lightTheme onChangeText={this.onTextChange.bind(this)} />;
   }
 
   singleScreen() {
@@ -46,6 +42,7 @@ class Head extends Component {
         onPress={() => {
           this.props.navigator.push({ id: "home" });
         }}
+        style={{ justifyContent: "center" }}
       >
         <Text>Back</Text>
       </TouchableHighlight>
