@@ -9,7 +9,7 @@ import {
   AppRegistry
 } from 'react-native';
 
-import App from './app';
+import App from './app/app';
 
 export default class Flicks extends Component {
   render() {

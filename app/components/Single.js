@@ -9,10 +9,6 @@ import {
   LayoutAnimation
 } from "react-native";
 
-import { Icon } from "react-native-elements";
-
-import { Head } from "./common";
-
 const DIMEN = Dimensions.get("window");
 const window_width = DIMEN.width;
 const window_height = DIMEN.height;
